@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zero Store</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6fa;color:#171923}
+header{background:#fff;border-bottom:1px solid #ddd;padding:14px}.nav{max-width:1100px;margin:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.logo{font-size:23px;font-weight:800}.logo span{color:#6658e8}.search{flex:1;min-width:180px;padding:11px;border:1px solid #ddd;border-radius:10px}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}.primary{background:#6658e8;color:white}.light{background:#eeecff;color:#5145c9}
+main{max-width:1100px;margin:25px auto;padding:0 16px}.hero{background:#22202d;color:white;padding:30px;border-radius:20px}.hero h1{margin:0 0 8px}.cats{display:flex;gap:8px;overflow:auto;margin:18px 0}.cat{background:white;border:1px solid #ddd;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:15px}.card{background:white;border:1px solid #e4e4ea;border-radius:15px;overflow:hidden}.pic{height:140px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:45px}.body{padding:14px}.price{font-size:18px;font-weight:800;margin-top:7px}.muted{font-size:13px;color:#777;margin-top:5px}.card button{width:100%;margin-top:12px}
+.modal{display:none;position:fixed;inset:0;background:#0008;padding:20px}.box{max-width:450px;background:white;border-radius:16px;padding:20px;margin:7vh auto}.close{float:right;background:none;font-size:24px}.input{width:100%;padding:11px;margin:6px 0;border:1px solid #ddd;border-radius:9px}
+</style></head><body>
+<header><div class="nav"><div class="logo">Zero <span>Store</span></div><input id="search" class="search" placeholder="Cari barang..." oninput="render()"><button class="light" onclick="loginBox()">Login</button><button class="primary" onclick="sellBox()">Jual Barang</button></div></header>
+<main><section class="hero"><h1>Marketplace Zero Store</h1><p>Temukan barang atau pasang iklanmu sendiri.</p></section>
+<div id="cats" class="cats"></div><div id="products" class="grid"></div></main>
+<div id="modal" class="modal" onclick="if(event.target===this)closeBox()"><div class="box"><button class="close" onclick="closeBox()">×</button><div id="content"></div></div></div>
+<script>
+const defaults=[
+["iPhone 13 128GB",6500000,"Elektronik","📱"],["Laptop Gaming",8500000,"Elektronik","💻"],["Sepatu Sneakers",450000,"Fashion","👟"],["Kursi Kantor",700000,"Rumah","🪑"],["Buku Koleksi",120000,"Buku","📚"],["Jam Tangan",900000,"Fashion","⌚"]];
+let products=JSON.parse(localStorage.getItem("zs_products")||"null")||defaults.map((x,i)=>({id:i,name:x[0],price:x[1],cat:x[2],emoji:x[3],seller:"Zero Seller"}));
+let selected="Semua";
+document.getElementById("cats").innerHTML=["Semua","Elektronik","Fashion","Rumah","Buku","Lainnya"].map(x=>`<button class="cat" onclick="selected='${x}';render()">${x}</button>`).join("");
+function money(n){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(n)}
+function render(){let q=document.getElementById("search").value.toLowerCase();let a=products.filter(p=>(selected=="Semua"||p.cat==selected)&&p.name.toLowerCase().includes(q));document.getElementById("products").innerHTML=a.length?a.map(p=>`<article class="card"><div class="pic">${p.emoji}</div><div class="body"><b>${p.name}</b><div class="price">${money(p.price)}</div><div class="muted">${p.cat} · ${p.seller}</div><button class="primary" onclick="alert('Demo: hubungi penjual untuk '+${JSON.stringify(p.name)})">Hubungi Penjual</button></div></article>`).join(""):"<p>Katalog tidak ditemukan.</p>"}
+function loginBox(){content.innerHTML='<h2>Login</h2><input id="em" class="input" type="email" placeholder="Email"><input id="pw" class="input" type="password" placeholder="Password"><button class="primary" style="width:100%" onclick="doLogin()">Masuk</button><p class="muted">Login demo tersimpan di browser ini.</p>';modal.style.display="block"}
+function doLogin(){let e=em.value.trim(),p=pw.value;if(!e||!p)return alert("Isi email dan password.");localStorage.setItem("zs_user",e);closeBox();alert("Login berhasil: "+e)}
+function sellBox(){content.innerHTML='<h2>Jual Barang</h2><input id="pn" class="input" placeholder="Nama barang"><input id="pp" class="input" type="number" placeholder="Harga"><select id="pc" class="input"><option>Elektronik</option><option>Fashion</option><option>Rumah</option><option>Buku</option><option>Lainnya</option></select><input id="ps" class="input" placeholder="Nama penjual"><button class="primary" style="width:100%" onclick="add()">Pasang Iklan</button>';modal.style.display="block"}
+function add(){if(!pn.value.trim()||!pp.value)return alert("Nama dan harga wajib diisi.");products.unshift({id:Date.now(),name:pn.value.trim(),price:Number(pp.value),cat:pc.value,seller:ps.value.trim()||"Penjual",emoji:"🛍️"});localStorage.setItem("zs_products",JSON.stringify(products));closeBox();render()}
+function closeBox(){modal.style.display="none"} render();
+</script></body></html>
